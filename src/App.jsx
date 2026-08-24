@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
-import { supabase, isSupabaseConfigured, supabaseConfigError } from "./lib/supabaseClient";
+import { useState } from "react";
+import { isSupabaseConfigured, supabaseConfigError } from "./lib/supabaseClient";
 import { useHomeHubData } from "./lib/useHomeHubData";
-import AuthScreen from "./components/AuthScreen";
 import TabBar from "./components/TabBar";
 import Toast from "./components/Toast";
 import InventoryTab from "./components/InventoryTab";
@@ -31,24 +30,11 @@ function ConfigErrorScreen() {
   );
 }
 
+// שלב ניסיוני: אין מסך התחברות — משתמש יחיד מרומז, ישר לדף הבית.
+// ה-RLS בטבלאות כובה בהתאם (ראה מיגרציית disable_auth_single_user_experimental).
 export default function App() {
-  const [session, setSession] = useState(undefined); // undefined = loading, null = signed out
-
-  useEffect(() => {
-    if (!isSupabaseConfigured) return;
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
-    return () => sub.subscription.unsubscribe();
-  }, []);
-
   if (!isSupabaseConfigured) {
     return <ConfigErrorScreen />;
-  }
-  if (session === undefined) {
-    return <div className="min-h-screen bg-base" />;
-  }
-  if (!session) {
-    return <AuthScreen />;
   }
   return <Main />;
 }
