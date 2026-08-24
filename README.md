@@ -17,7 +17,7 @@ npm i -g netlify-cli
 netlify dev
 ```
 
-יש להגדיר משתנה סביבה `ANTHROPIC_API_KEY` (ראו למטה).
+יש להגדיר משתנה סביבה `GOOGLE_API_KEY` (ראו למטה).
 
 ## Supabase
 
@@ -36,7 +36,7 @@ netlify dev
 |---|---|
 | `VITE_SUPABASE_URL` | `https://gdedbksabimjxafsjpej.supabase.co` |
 | `VITE_SUPABASE_ANON_KEY` | (ראה `.env.example`) |
-| `ANTHROPIC_API_KEY` | מפתח API אישי מ-console.anthropic.com — **סודי, לא לשים ב-git** |
+| `GOOGLE_API_KEY` | מפתח Gemini API אישי מ-Google AI Studio / Google Cloud Console — **סודי, לא לשים ב-git** |
 
 ## פריסה
 
@@ -54,9 +54,14 @@ src/
     InventoryTab / ListTab / ReceiptsTab / CookTab.jsx
     sheets/  AddSheet, ScanSheet, ReviewSheet, WizardSheet, RecipeSheet
 netlify/functions/
-  scan-receipt.mjs          Claude vision → JSON מובנה מקבלה
-  suggest-recipes.mjs       Claude → הצעות מתכונים לפי מלאי + שאלון
+  scan-receipt.mjs          Gemini vision → JSON מובנה מקבלה
+  suggest-recipes.mjs       Gemini → הצעות מתכונים לפי מלאי + שאלון
 ```
+
+## מודל AI
+
+כל קריאות ה-AI (סריקת קבלות והצעת מתכונים) עוברות דרך **Google Gemini** (`gemini-2.5-flash`), לא Claude — לפי בקשה מפורשת. המפתח (`GOOGLE_API_KEY`) משמש רק בצד שרת (Netlify Functions), אף פעם לא נחשף בצד לקוח.
+
 
 ## מצב נוכחי (MVP שלב 1+2)
 

@@ -1,17 +1,19 @@
 // Netlify Function: suggest-recipes
 // Given the current inventory and answers to the clarifying wizard
-// (servings / style / time / flexibility), asks Claude to propose recipes
-// that make good use of what's already at home.
+// (servings / style / time / flexibility), asks Google Gemini to propose
+// recipes that make good use of what's already at home.
+
+const MODEL = "gemini-2.5-flash";
 
 export default async (req) => {
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) {
     return new Response(
-      JSON.stringify({ error: "ANTHROPIC_API_KEY לא מוגדר בסביבת Netlify" }),
+      JSON.stringify({ error: "GOOGLE_API_KEY לא מוגדר בסביבת Netlify" }),
       { status: 500 }
     );
   }
@@ -50,28 +52,30 @@ ${inventoryText}
 }
 כאשר מצרך כבר קיים במלאי, השתמש באותו שם בדיוק כדי שהמערכת תוכל להצליב.`;
 
-    const resp = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-5",
-        max_tokens: 2500,
-        messages: [{ role: "user", content: prompt }],
-      }),
-    });
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: {
+            response_mime_type: "application/json",
+          },
+        }),
+      }
+    );
 
     if (!resp.ok) {
       const errText = await resp.text();
-      return new Response(JSON.stringify({ error: "שגיאה מול Claude API", detail: errText }), { status: 502 });
+      return new Response(JSON.stringify({ error: "שגיאה מול Gemini API", detail: errText }), { status: 502 });
     }
 
     const data = await resp.json();
-    const textBlock = (data.content || []).find((b) => b.type === "text");
-    const raw = textBlock ? textBlock.text : "{}";
+    const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
     const cleaned = raw.replace(/```json|```/g, "").trim();
 
     let parsed;
