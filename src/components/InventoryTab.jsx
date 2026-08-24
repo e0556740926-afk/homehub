@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getItemVisual } from "../lib/categoryVisuals";
 
 const LOCATIONS = ["הכל", "מקרר", "מזווה", "מקפיא"];
 
@@ -38,38 +39,49 @@ export default function InventoryTab({ items, expiringCount, onInc, onDec, onMar
 
       <div className="flex flex-col gap-2.5">
         {visible.length === 0 && <div className="text-muted text-sm text-center py-10">אין פריטים במיקום זה</div>}
-        {visible.map((i) => (
-          <div
-            key={i.id}
-            className={`bg-white rounded-xl2 px-4 py-3 flex items-center justify-between shadow-sm ${
-              soon(i) ? "border-[1.5px] border-terracottaLight" : ""
-            }`}
-          >
-            <div>
-              <div className="font-display font-extrabold text-base text-ink">{i.name}</div>
-              <div className={`text-xs ${soon(i) ? "text-terracotta font-semibold" : "text-muted"}`}>
-                {soon(i) ? `פג בקרוב · ${i.expiry_date}` : i.location}
+        {visible.map((i) => {
+          const { Icon, bg, fg } = getItemVisual(i.name);
+          return (
+            <div
+              key={i.id}
+              className={`bg-white rounded-xl2 px-4 py-3 flex items-center justify-between shadow-sm ${
+                soon(i) ? "border-[1.5px] border-terracottaLight" : ""
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-11 h-11 rounded-xl2 flex items-center justify-center flex-none"
+                  style={{ background: bg }}
+                >
+                  <Icon size={20} color={fg} strokeWidth={2} />
+                </div>
+                <div>
+                  <div className="font-display font-extrabold text-base text-ink">{i.name}</div>
+                  <div className={`text-xs ${soon(i) ? "text-terracotta font-semibold" : "text-muted"}`}>
+                    {soon(i) ? `פג בקרוב · ${i.expiry_date}` : i.location}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <span className="font-display font-bold text-sm text-ink">
+                  {i.quantity} {i.unit}
+                </span>
+                <button
+                  onClick={() => onDec(i)}
+                  className="w-7 h-7 rounded-lg border-2 border-ink text-ink flex items-center justify-center font-bold"
+                >
+                  −
+                </button>
+                <button
+                  onClick={() => onInc(i)}
+                  className="w-7 h-7 rounded-lg bg-ink text-cream flex items-center justify-center font-bold"
+                >
+                  +
+                </button>
               </div>
             </div>
-            <div className="flex items-center gap-2.5">
-              <span className="font-display font-bold text-sm text-ink">
-                {i.quantity} {i.unit}
-              </span>
-              <button
-                onClick={() => onDec(i)}
-                className="w-7 h-7 rounded-lg border-2 border-ink text-ink flex items-center justify-center font-bold"
-              >
-                −
-              </button>
-              <button
-                onClick={() => onInc(i)}
-                className="w-7 h-7 rounded-lg bg-ink text-cream flex items-center justify-center font-bold"
-              >
-                +
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

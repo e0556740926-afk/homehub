@@ -7,6 +7,7 @@ import InventoryTab from "./components/InventoryTab";
 import ListTab from "./components/ListTab";
 import ReceiptsTab from "./components/ReceiptsTab";
 import CookTab from "./components/CookTab";
+import HomeTab from "./components/HomeTab";
 import AddSheet from "./components/sheets/AddSheet";
 import ScanSheet from "./components/sheets/ScanSheet";
 import ReviewSheet from "./components/sheets/ReviewSheet";
@@ -41,14 +42,14 @@ export default function App() {
 
 function Main() {
   const data = useHomeHubData();
-  const [tab, setTab] = useState("inv");
+  const [tab, setTab] = useState("home");
   const [sheet, setSheet] = useState(null); // 'add' | 'scan' | 'review' | 'wizard' | 'recipe'
   const [scanBusy, setScanBusy] = useState(false);
   const [wizardBusy, setWizardBusy] = useState(false);
   const [parsedReceipt, setParsedReceipt] = useState(null);
   const [results, setResults] = useState(null);
   const [answers, setAnswers] = useState({ servings: "2", style: "חלבי" });
-  const [openRecipeIdx, setOpenRecipeIdx] = useState(null);
+  const [openRecipe, setOpenRecipe] = useState(null);
 
   async function handleScanFile(file) {
     setScanBusy(true);
@@ -92,11 +93,27 @@ function Main() {
     else setSheet("add");
   }
 
-  const openRecipe = openRecipeIdx != null ? results?.[openRecipeIdx] : null;
+  function openRecipeSheet(recipe) {
+    setOpenRecipe(recipe);
+    setSheet("recipe");
+  }
 
   return (
     <div className="min-h-screen bg-base" dir="rtl">
       <div className="max-w-md mx-auto relative min-h-screen bg-base">
+        {tab === "home" && (
+          <HomeTab
+            items={data.items}
+            list={data.list}
+            expiringCount={data.expiringCount}
+            recentItems={data.recentItems}
+            favorites={data.favorites}
+            onOpenScan={() => setSheet("scan")}
+            onOpenWizard={() => setSheet("wizard")}
+            onOpenAdd={() => setSheet("add")}
+            onOpenRecipe={openRecipeSheet}
+          />
+        )}
         {tab === "inv" && (
           <InventoryTab
             items={data.items}
@@ -114,21 +131,20 @@ function Main() {
             evalRecipe={data.evalRecipe}
             answers={answers}
             onOpenWizard={() => setSheet("wizard")}
-            onOpenRecipe={(idx) => {
-              setOpenRecipeIdx(idx);
-              setSheet("recipe");
-            }}
+            onOpenRecipe={openRecipeSheet}
           />
         )}
 
         {/* Floating action button */}
-        <button
-          onClick={fab}
-          className="fixed z-30 bg-ink text-cream w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold shadow-lg"
-          style={{ bottom: "calc(5.5rem + env(safe-area-inset-bottom))", insetInlineStart: "1.5rem" }}
-        >
-          +
-        </button>
+        {tab !== "home" && (
+          <button
+            onClick={fab}
+            className="fixed z-30 bg-ink text-cream w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold shadow-lg"
+            style={{ bottom: "calc(5.5rem + env(safe-area-inset-bottom))", insetInlineStart: "1.5rem" }}
+          >
+            +
+          </button>
+        )}
 
         <TabBar tab={tab} setTab={setTab} />
         <Toast message={data.toast} />
@@ -158,6 +174,8 @@ function Main() {
             recipe={openRecipe}
             evalRecipe={data.evalRecipe}
             servings={answers.servings}
+            favorite={data.isFavorite(openRecipe.name)}
+            onToggleFavorite={data.toggleFavorite}
             onClose={() => setSheet(null)}
             onAddMissing={data.addMissingToList}
             onCook={async (r) => {

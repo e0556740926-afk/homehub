@@ -1,11 +1,27 @@
+import { Heart, ChefHat } from "lucide-react";
 import SheetShell from "./SheetShell";
+import { gradientForName } from "../../lib/gradients";
 
-export default function RecipeSheet({ recipe, evalRecipe, servings, onClose, onAddMissing, onCook }) {
+export default function RecipeSheet({ recipe, evalRecipe, servings, favorite, onToggleFavorite, onClose, onAddMissing, onCook }) {
   if (!recipe) return null;
   const e = evalRecipe(recipe);
 
   return (
-    <SheetShell title={recipe.name} onClose={onClose}>
+    <SheetShell title="" onClose={onClose}>
+      <div
+        className="-mt-2 mb-4 rounded-2xl h-28 flex items-center justify-between px-5"
+        style={{ background: gradientForName(recipe.name) }}
+      >
+        <ChefHat size={34} color="#fff" strokeWidth={1.6} />
+        <button
+          onClick={() => onToggleFavorite(recipe)}
+          className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"
+        >
+          <Heart size={20} color="#fff" fill={favorite ? "#fff" : "none"} strokeWidth={2} />
+        </button>
+      </div>
+
+      <div className="font-display font-extrabold text-2xl text-ink mb-1">{recipe.name}</div>
       <div className="flex items-center justify-between mb-4">
         <span className="text-muted text-sm">
           {recipe.time_minutes} דק׳ · {servings} סועדים · {recipe.style}

@@ -12,6 +12,7 @@ export function useHomeHubData() {
   const [items, setItems] = useState([]);
   const [list, setList] = useState([]);
   const [receipts, setReceipts] = useState([]);
+  const [favorites, setFavorites] = useState([]);
   const [priceMap, setPriceMap] = useState({}); // item_name -> latest estimated price
   const [loading, setLoading] = useState(true);
   const [toast, setToastState] = useState(null);
@@ -24,15 +25,17 @@ export function useHomeHubData() {
 
   const loadAll = useCallback(async () => {
     setLoading(true);
-    const [itemsRes, listRes, receiptsRes, priceRes] = await Promise.all([
+    const [itemsRes, listRes, receiptsRes, priceRes, favRes] = await Promise.all([
       supabase.from("items").select("*").order("name"),
       supabase.from("shopping_list").select("*").eq("status", "pending").order("created_at"),
       supabase.from("receipts").select("*").order("purchased_at", { ascending: false }).limit(20),
       supabase.from("price_history").select("item_name, unit_price, price, purchased_at").order("purchased_at", { ascending: false }).limit(500),
+      supabase.from("recipes").select("*").eq("is_favorite", true).order("created_at", { ascending: false }),
     ]);
     if (!itemsRes.error) setItems(itemsRes.data || []);
     if (!listRes.error) setList(listRes.data || []);
     if (!receiptsRes.error) setReceipts(receiptsRes.data || []);
+    if (!favRes.error) setFavorites(favRes.data || []);
     if (!priceRes.error) {
       const map = {};
       for (const row of priceRes.data || []) {
@@ -255,8 +258,43 @@ export function useHomeHubData() {
     [items, addToList, loadAll, showToast]
   );
 
+  const toggleFavorite = useCallback(
+    async (recipe) => {
+      const existing = favorites.find((f) => f.name === recipe.name);
+      if (existing) {
+        await supabase.from("recipes").delete().eq("id", existing.id);
+        setFavorites((s) => s.filter((f) => f.id !== existing.id));
+        showToast("הוסר מהמועדפים");
+      } else {
+        const { data, error } = await supabase
+          .from("recipes")
+          .insert({
+            name: recipe.name,
+            style: recipe.style,
+            time_minutes: recipe.time_minutes,
+            ingredients: recipe.ingredients,
+            is_favorite: true,
+          })
+          .select()
+          .single();
+        if (!error) {
+          setFavorites((s) => [data, ...s]);
+          showToast(`${recipe.name} נוסף למועדפים`);
+        }
+      }
+    },
+    [favorites, showToast]
+  );
+
+  const isFavorite = useCallback((recipeName) => favorites.some((f) => f.name === recipeName), [favorites]);
+
   const expiringCount = useMemo(
     () => items.filter((i) => i.expiry_date && new Date(i.expiry_date) - new Date() < 1000 * 60 * 60 * 24 * 5).length,
+    [items]
+  );
+
+  const recentItems = useMemo(
+    () => [...items].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 8),
     [items]
   );
 
@@ -264,6 +302,8 @@ export function useHomeHubData() {
     items,
     list,
     receipts,
+    favorites,
+    recentItems,
     loading,
     toast,
     showToast,
@@ -281,6 +321,8 @@ export function useHomeHubData() {
     runSuggestRecipes,
     addMissingToList,
     cookRecipe,
+    toggleFavorite,
+    isFavorite,
     reload: loadAll,
   };
 }
