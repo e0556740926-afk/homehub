@@ -13,6 +13,7 @@ import ScanSheet from "./components/sheets/ScanSheet";
 import ReviewSheet from "./components/sheets/ReviewSheet";
 import WizardSheet from "./components/sheets/WizardSheet";
 import RecipeSheet from "./components/sheets/RecipeSheet";
+import SettingsSheet from "./components/sheets/SettingsSheet";
 
 function ConfigErrorScreen() {
   return (
@@ -108,10 +109,12 @@ function Main() {
             expiringCount={data.expiringCount}
             recentItems={data.recentItems}
             favorites={data.favorites}
+            settings={data.settings}
             onOpenScan={() => setSheet("scan")}
             onOpenWizard={() => setSheet("wizard")}
             onOpenAdd={() => setSheet("add")}
             onOpenRecipe={openRecipeSheet}
+            onOpenSettings={() => setSheet("settings")}
           />
         )}
         {tab === "inv" && (
@@ -184,6 +187,9 @@ function Main() {
               setTab("inv");
             }}
           />
+        )}
+        {sheet === "settings" && (
+          <SettingsSheet settings={data.settings} onClose={() => setSheet(null)} onSave={data.saveSettings} />
         )}
       </div>
     </div>

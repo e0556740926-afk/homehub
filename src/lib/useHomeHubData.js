@@ -13,6 +13,7 @@ export function useHomeHubData() {
   const [list, setList] = useState([]);
   const [receipts, setReceipts] = useState([]);
   const [favorites, setFavorites] = useState([]);
+  const [settings, setSettings] = useState(null);
   const [priceMap, setPriceMap] = useState({}); // item_name -> latest estimated price
   const [loading, setLoading] = useState(true);
   const [toast, setToastState] = useState(null);
@@ -25,17 +26,19 @@ export function useHomeHubData() {
 
   const loadAll = useCallback(async () => {
     setLoading(true);
-    const [itemsRes, listRes, receiptsRes, priceRes, favRes] = await Promise.all([
+    const [itemsRes, listRes, receiptsRes, priceRes, favRes, settingsRes] = await Promise.all([
       supabase.from("items").select("*").order("name"),
       supabase.from("shopping_list").select("*").eq("status", "pending").order("created_at"),
       supabase.from("receipts").select("*").order("purchased_at", { ascending: false }).limit(20),
       supabase.from("price_history").select("item_name, unit_price, price, purchased_at").order("purchased_at", { ascending: false }).limit(500),
       supabase.from("recipes").select("*").eq("is_favorite", true).order("created_at", { ascending: false }),
+      supabase.from("settings").select("*").eq("id", 1).single(),
     ]);
     if (!itemsRes.error) setItems(itemsRes.data || []);
     if (!listRes.error) setList(listRes.data || []);
     if (!receiptsRes.error) setReceipts(receiptsRes.data || []);
     if (!favRes.error) setFavorites(favRes.data || []);
+    if (!settingsRes.error) setSettings(settingsRes.data || null);
     if (!priceRes.error) {
       const map = {};
       for (const row of priceRes.data || []) {
@@ -288,6 +291,14 @@ export function useHomeHubData() {
 
   const isFavorite = useCallback((recipeName) => favorites.some((f) => f.name === recipeName), [favorites]);
 
+  const saveSettings = useCallback(async (patch) => {
+    const { data, error } = await supabase.from("settings").update(patch).eq("id", 1).select().single();
+    if (!error) {
+      setSettings(data);
+      showToast("ההגדרה נשמרה");
+    }
+  }, [showToast]);
+
   const expiringCount = useMemo(
     () => items.filter((i) => i.expiry_date && new Date(i.expiry_date) - new Date() < 1000 * 60 * 60 * 24 * 5).length,
     [items]
@@ -304,6 +315,8 @@ export function useHomeHubData() {
     receipts,
     favorites,
     recentItems,
+    settings,
+    saveSettings,
     loading,
     toast,
     showToast,

@@ -1,6 +1,8 @@
-import { Package, AlertTriangle, ShoppingCart, ScanLine, ChefHat, Heart } from "lucide-react";
+import { Package, AlertTriangle, ShoppingCart, ScanLine, ChefHat, Heart, Settings, CalendarClock } from "lucide-react";
 import { getItemVisual } from "../lib/categoryVisuals";
 import { gradientForName } from "../lib/gradients";
+
+const DAY_NAMES = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
 
 function greeting() {
   const h = new Date().getHours();
@@ -18,10 +20,12 @@ export default function HomeTab({
   expiringCount,
   recentItems,
   favorites,
+  settings,
   onOpenScan,
   onOpenWizard,
   onOpenAdd,
   onOpenRecipe,
+  onOpenSettings,
 }) {
   return (
     <div className="pb-28" dir="rtl">
@@ -46,8 +50,14 @@ export default function HomeTab({
           <circle cx="100" cy="100" r="100" fill="#5C7A63" />
         </svg>
         <div className="relative">
-          <div className="text-cream/60 text-xs font-semibold mb-1">{DATE_FMT.format(new Date())}</div>
+          <div className="flex items-start justify-between mb-1">
+            <div className="text-cream/60 text-xs font-semibold">{DATE_FMT.format(new Date())}</div>
+            <button onClick={onOpenSettings} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+              <Settings size={16} color="#FBF7F2" strokeWidth={2} />
+            </button>
+          </div>
           <div className="font-display font-extrabold text-3xl text-cream mb-5">{greeting()} 👋</div>
+
 
           <div className="grid grid-cols-3 gap-2.5">
             <StatCard icon={Package} value={items.length} label="פריטים" />
@@ -63,6 +73,22 @@ export default function HomeTab({
         <QuickAction icon={ChefHat} label="מה מבשלים" onClick={onOpenWizard} />
         <QuickAction icon={Package} label="הוסף פריט" onClick={onOpenAdd} />
       </div>
+
+      {settings?.weekly_list_enabled && (
+        <button
+          onClick={onOpenSettings}
+          className="mx-5 mb-6 bg-white rounded-2xl px-4 py-3 flex items-center gap-3 shadow-sm w-[calc(100%-2.5rem)] text-right"
+        >
+          <div className="w-9 h-9 rounded-full bg-chip flex items-center justify-center flex-none">
+            <CalendarClock size={16} color="#7A7168" strokeWidth={2} />
+          </div>
+          <div className="text-xs text-mutedDark">
+            רשימת קניות אוטומטית מתעדכנת כל יום{" "}
+            <span className="font-bold text-ink">{DAY_NAMES[settings.weekly_list_day]}</span> בשעה{" "}
+            <span className="font-bold text-ink">{String(settings.weekly_list_hour).padStart(2, "0")}:00</span>
+          </div>
+        </button>
+      )}
 
       {/* Recently added */}
       {recentItems.length > 0 && (
