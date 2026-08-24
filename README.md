@@ -60,7 +60,7 @@ netlify/functions/
 
 ## מודל AI
 
-כל קריאות ה-AI (סריקת קבלות והצעת מתכונים) עוברות דרך **Google Gemini** (`gemini-2.5-flash`), לא Claude — לפי בקשה מפורשת. המפתח (`GOOGLE_API_KEY`) משמש רק בצד שרת (Netlify Functions), אף פעם לא נחשף בצד לקוח.
+כל קריאות ה-AI (סריקת קבלות והצעת מתכונים) עוברות דרך **Google Gemini** (`gemini-3.6-flash`), לא Claude — לפי בקשה מפורשת. המפתח (`GOOGLE_API_KEY`) משמש רק בצד שרת (Netlify Functions), אף פעם לא נחשף בצד לקוח.
 
 
 ## מצב נוכחי (MVP שלב 1+2)

@@ -3,7 +3,7 @@
 // (servings / style / time / flexibility), asks Google Gemini to propose
 // recipes that make good use of what's already at home.
 
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-3.6-flash";
 
 export default async (req) => {
   if (req.method !== "POST") {

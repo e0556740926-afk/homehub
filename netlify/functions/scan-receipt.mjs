@@ -3,7 +3,7 @@
 // structured line items in Hebrew, and returns clean JSON for the client
 // to review.
 
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-3.6-flash";
 
 export default async (req) => {
   if (req.method !== "POST") {
