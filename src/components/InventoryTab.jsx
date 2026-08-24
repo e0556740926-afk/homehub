@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { Trash2 } from "lucide-react";
 import { getItemVisual } from "../lib/categoryVisuals";
 
 const LOCATIONS = ["הכל", "מקרר", "מזווה", "מקפיא"];
 
-export default function InventoryTab({ items, expiringCount, onInc, onDec, onMarkOut }) {
+export default function InventoryTab({ items, expiringCount, onInc, onDec, onWaste }) {
   const [loc, setLoc] = useState("הכל");
   const visible = items.filter((i) => loc === "הכל" || i.location === loc);
   const soon = (i) => i.expiry_date && new Date(i.expiry_date) - new Date() < 1000 * 60 * 60 * 24 * 5;
@@ -62,7 +63,7 @@ export default function InventoryTab({ items, expiringCount, onInc, onDec, onMar
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2">
                 <span className="font-display font-bold text-sm text-ink">
                   {i.quantity} {i.unit}
                 </span>
@@ -77,6 +78,13 @@ export default function InventoryTab({ items, expiringCount, onInc, onDec, onMar
                   className="w-7 h-7 rounded-lg bg-ink text-cream flex items-center justify-center font-bold"
                 >
                   +
+                </button>
+                <button
+                  onClick={() => onWaste(i)}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-mutedLight"
+                  title="סמן כנזרק"
+                >
+                  <Trash2 size={15} strokeWidth={2} />
                 </button>
               </div>
             </div>

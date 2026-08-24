@@ -14,6 +14,10 @@ import ReviewSheet from "./components/sheets/ReviewSheet";
 import WizardSheet from "./components/sheets/WizardSheet";
 import RecipeSheet from "./components/sheets/RecipeSheet";
 import SettingsSheet from "./components/sheets/SettingsSheet";
+import BarcodeSheet from "./components/sheets/BarcodeSheet";
+import FridgeScanSheet from "./components/sheets/FridgeScanSheet";
+import WeeklyMenuSheet from "./components/sheets/WeeklyMenuSheet";
+import VoiceSheet from "./components/sheets/VoiceSheet";
 
 function ConfigErrorScreen() {
   return (
@@ -44,7 +48,7 @@ export default function App() {
 function Main() {
   const data = useHomeHubData();
   const [tab, setTab] = useState("home");
-  const [sheet, setSheet] = useState(null); // 'add' | 'scan' | 'review' | 'wizard' | 'recipe'
+  const [sheet, setSheet] = useState(null);
   const [scanBusy, setScanBusy] = useState(false);
   const [wizardBusy, setWizardBusy] = useState(false);
   const [parsedReceipt, setParsedReceipt] = useState(null);
@@ -88,6 +92,19 @@ function Main() {
     }
   }
 
+  async function handleFridgeConfirm(scanItems) {
+    await data.addFridgeScanItems(scanItems);
+    setTab("inv");
+  }
+
+  async function handleAddAllMissing(names) {
+    for (const name of names) {
+      await data.addManualToList({ name, quantity: 1, unit: "יח׳" });
+    }
+    setSheet(null);
+    setTab("list");
+  }
+
   function fab() {
     if (tab === "receipts") setSheet("scan");
     else if (tab === "cook") setSheet("wizard");
@@ -110,11 +127,20 @@ function Main() {
             recentItems={data.recentItems}
             favorites={data.favorites}
             settings={data.settings}
+            predictedRunOut={data.predictedRunOut}
+            spendingStats={data.spendingStats}
+            priceComparison={data.priceComparison}
+            cookStreak={data.cookStreak}
+            wasteThisMonth={data.wasteThisMonth}
             onOpenScan={() => setSheet("scan")}
             onOpenWizard={() => setSheet("wizard")}
             onOpenAdd={() => setSheet("add")}
             onOpenRecipe={openRecipeSheet}
             onOpenSettings={() => setSheet("settings")}
+            onOpenBarcode={() => setSheet("barcode")}
+            onOpenFridgeScan={() => setSheet("fridge")}
+            onOpenWeeklyMenu={() => setSheet("weeklyMenu")}
+            onOpenVoice={() => setSheet("voice")}
           />
         )}
         {tab === "inv" && (
@@ -123,7 +149,7 @@ function Main() {
             expiringCount={data.expiringCount}
             onInc={data.incItem}
             onDec={data.decItem}
-            onMarkOut={data.markOut}
+            onWaste={data.logWaste}
           />
         )}
         {tab === "list" && <ListTab list={data.list} estimatePrice={data.estimatePrice} onBuy={data.buyListItem} />}
@@ -138,7 +164,6 @@ function Main() {
           />
         )}
 
-        {/* Floating action button */}
         {tab !== "home" && (
           <button
             onClick={fab}
@@ -165,12 +190,7 @@ function Main() {
           <ReviewSheet parsed={parsedReceipt} onClose={() => setSheet(null)} onConfirm={handleConfirmReceipt} />
         )}
         {sheet === "wizard" && (
-          <WizardSheet
-            onClose={() => setSheet(null)}
-            onDone={handleWizardDone}
-            busy={wizardBusy}
-            defaultServings={2}
-          />
+          <WizardSheet onClose={() => setSheet(null)} onDone={handleWizardDone} busy={wizardBusy} defaultServings={2} />
         )}
         {sheet === "recipe" && openRecipe && (
           <RecipeSheet
@@ -191,6 +211,27 @@ function Main() {
         {sheet === "settings" && (
           <SettingsSheet settings={data.settings} onClose={() => setSheet(null)} onSave={data.saveSettings} />
         )}
+        {sheet === "barcode" && (
+          <BarcodeSheet
+            onClose={() => setSheet(null)}
+            onAdd={(draft) => {
+              data.addItemManual(draft);
+              setTab("inv");
+            }}
+          />
+        )}
+        {sheet === "fridge" && (
+          <FridgeScanSheet onClose={() => setSheet(null)} onScan={data.runScanFridge} onConfirm={handleFridgeConfirm} />
+        )}
+        {sheet === "weeklyMenu" && (
+          <WeeklyMenuSheet
+            onClose={() => setSheet(null)}
+            onGenerate={() => data.runWeeklyMenu(answers.servings)}
+            onAddAllMissing={handleAddAllMissing}
+            evalRecipe={data.evalRecipe}
+          />
+        )}
+        {sheet === "voice" && <VoiceSheet onClose={() => setSheet(null)} onAsk={data.runAsk} />}
       </div>
     </div>
   );

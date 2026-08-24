@@ -29,3 +29,53 @@ export async function suggestRecipes(items, answers) {
   if (!res.ok) throw new Error(data.error || "שגיאה בהצעת מתכונים");
   return data.recipes || [];
 }
+
+export async function scanFridge(file) {
+  const imageBase64 = await fileToBase64(file);
+  const res = await fetch("/api/scan-fridge", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ imageBase64, mediaType: file.type || "image/jpeg" }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "שגיאה בסריקת התמונה");
+  return data.items || [];
+}
+
+export async function getWeeklyMenu(items, servings) {
+  const res = await fetch("/api/weekly-menu", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ items, servings }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "שגיאה בבניית התפריט השבועי");
+  return data.days || [];
+}
+
+export async function askAssistant(question, items, list) {
+  const res = await fetch("/api/ask", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question, items, list }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "שגיאה בקבלת תשובה");
+  return data.answer || "";
+}
+
+// Open Food Facts is a free, keyless public database — good fit for
+// barcode → product-name lookups without adding another paid dependency.
+export async function lookupBarcode(code) {
+  const res = await fetch(
+    `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=product_name,product_name_he,brands,quantity`
+  );
+  if (!res.ok) throw new Error("שגיאה בבדיקת הברקוד");
+  const data = await res.json();
+  if (data.status !== 1 || !data.product) return null;
+  const p = data.product;
+  return {
+    name: p.product_name_he || p.product_name || p.brands || null,
+    quantity: p.quantity || null,
+  };
+}
