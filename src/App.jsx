@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase, isSupabaseConfigured } from "./lib/supabaseClient";
+import { supabase, isSupabaseConfigured, supabaseConfigError } from "./lib/supabaseClient";
 import { useHomeHubData } from "./lib/useHomeHubData";
 import AuthScreen from "./components/AuthScreen";
 import TabBar from "./components/TabBar";
@@ -19,12 +19,11 @@ function ConfigErrorScreen() {
     <div className="min-h-screen flex items-center justify-center bg-base p-6" dir="rtl">
       <div className="w-full max-w-sm bg-white rounded-xl2 p-6 shadow-sm">
         <div className="font-display font-extrabold text-xl text-terracotta mb-2">חסרה הגדרת Supabase</div>
-        <div className="text-mutedDark text-sm leading-relaxed mb-3">
-          משתני הסביבה <code className="bg-chip px-1 rounded">VITE_SUPABASE_URL</code> ו-
-          <code className="bg-chip px-1 rounded">VITE_SUPABASE_ANON_KEY</code> לא מוגדרים בסביבה הזו.
-        </div>
+        <div className="text-mutedDark text-sm leading-relaxed mb-3">{supabaseConfigError}</div>
         <div className="text-mutedDark text-sm leading-relaxed">
-          ב-Netlify: Site configuration → Environment variables → הוסף את שני המשתנים (הערכים נמצאים ב-
+          ב-Netlify: Site configuration → Environment variables → ודא ש-
+          <code className="bg-chip px-1 rounded">VITE_SUPABASE_URL</code> ו-
+          <code className="bg-chip px-1 rounded">VITE_SUPABASE_ANON_KEY</code> מוגדרים נכון (הערכים ב-
           <code className="bg-chip px-1 rounded">.env.example</code> ברפו), ואז Trigger deploy מחדש.
         </div>
       </div>
