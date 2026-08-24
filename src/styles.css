@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+  background: #F0EEE9;
+}
+
+body {
+  margin: 0;
+  font-family: "Assistant", system-ui, sans-serif;
+  color: #2A2724;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: contain;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+input, textarea, button {
+  font-family: inherit;
+}
+
+/* hide scrollbars on the chip rows but keep scroll */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+@keyframes slideUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.sheet-enter {
+  animation: slideUp .22s ease-out;
+}
+
+@keyframes toastIn {
+  from { transform: translate(-50%, 10px); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
+}
+.toast-enter {
+  animation: toastIn .2s ease-out;
+}
