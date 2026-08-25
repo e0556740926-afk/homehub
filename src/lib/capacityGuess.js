@@ -33,11 +33,13 @@ export function estimateCapacity(name = "", family) {
 export function normalizeToBase(quantity, unit) {
   if (unit === "ק״ג") return quantity * 1000;
   if (unit === "ל׳") return quantity * 1000;
+  if (unit === "כף") return quantity * 15; // tablespoon ≈ 15ml
+  if (unit === "כפית") return quantity * 5; // teaspoon ≈ 5ml
   return quantity; // ג׳ and מ״ל are already base units
 }
 
 export function unitFamily(unit) {
-  return unit === "מ״ל" || unit === "ל׳" ? "volume" : "weight";
+  return unit === "מ״ל" || unit === "ל׳" || unit === "כף" || unit === "כפית" ? "volume" : "weight";
 }
 
-export const MEASURED_UNITS = ["ג׳", "ק״ג", "ל׳", "מ״ל"];
+export const MEASURED_UNITS = ["ג׳", "ק״ג", "ל׳", "מ״ל", "כף", "כפית"];

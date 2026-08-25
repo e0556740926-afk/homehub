@@ -38,6 +38,13 @@ export default function CookTab({ results, evalRecipe, onOpenWizard, onOpenRecip
           ענה על כמה שאלות קצרות ונציע לך מתכונים לפי מה שכבר יש בבית
         </div>
       )}
+      {results && results.length === 0 && (
+        <div className="text-muted text-sm text-center py-10 leading-relaxed">
+          לא נמצא מתכון שעומד בדיוק בדרישות (זמן/כמות מצרכים חסרים).
+          <br />
+          נסה להאריך את הזמן או להוסיף גמישות ברמת המצרכים החסרים.
+        </div>
+      )}
 
       <div className="flex flex-col gap-3">
         {(results || []).map((r, idx) => {

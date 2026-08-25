@@ -268,10 +268,24 @@ export function useHomeHubData() {
     [items]
   );
 
-  const runSuggestRecipes = useCallback(async (answers) => {
-    const recipes = await suggestRecipesApi(items, answers);
-    return recipes;
-  }, [items]);
+  const FLEX_MAX_MISSING = { "רק מה שיש": 0, "עד מצרך אחד חסר": 1, "עד 2 חסרים": 2 };
+
+  const runSuggestRecipes = useCallback(
+    async (answers) => {
+      const recipes = await suggestRecipesApi(items, answers);
+      const maxMissing = FLEX_MAX_MISSING[answers.flex] ?? 1;
+      const maxTime = parseInt(answers.time, 10);
+      // Safety net: the prompt asks the model to respect time/missing-ingredient
+      // limits, but don't just trust it — filter out anything that doesn't
+      // actually comply before showing it to the user.
+      return recipes.filter((r) => {
+        if (maxTime && r.time_minutes > maxTime) return false;
+        const { missing } = evalRecipe(r);
+        return missing.length <= maxMissing;
+      });
+    },
+    [items, evalRecipe]
+  );
 
   const addMissingToList = useCallback(
     async (recipe) => {
