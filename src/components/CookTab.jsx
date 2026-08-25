@@ -1,7 +1,7 @@
-import { ChefHat } from "lucide-react";
+import { ChefHat, CalendarDays } from "lucide-react";
 import { gradientForName } from "../lib/gradients";
 
-export default function CookTab({ results, evalRecipe, onOpenWizard, onOpenRecipe, answers }) {
+export default function CookTab({ results, evalRecipe, onOpenWizard, onOpenRecipe, onOpenWeeklyMenu, answers }) {
   return (
     <div className="px-5 pt-4 pb-28" dir="rtl">
       <div className="font-display text-xs tracking-widest text-mutedLight mb-1">RECIPES</div>
@@ -10,12 +10,21 @@ export default function CookTab({ results, evalRecipe, onOpenWizard, onOpenRecip
         {results ? `לפי המלאי · ${answers.servings} סועדים · ${answers.style}` : "התאמה חיה למלאי הנוכחי"}
       </div>
 
-      <button
-        onClick={onOpenWizard}
-        className="w-full bg-ink text-cream rounded-xl2 py-3.5 font-display font-bold mb-5"
-      >
-        {results ? "שאלון חדש" : "מה מבשלים הערב?"}
-      </button>
+      <div className="flex gap-2.5 mb-5">
+        <button
+          onClick={onOpenWizard}
+          className="flex-1 bg-ink text-cream rounded-xl2 py-3.5 font-display font-bold"
+        >
+          {results ? "שאלון חדש" : "מה מבשלים הערב?"}
+        </button>
+        <button
+          onClick={onOpenWeeklyMenu}
+          className="bg-white text-ink rounded-xl2 px-4 shadow-sm flex items-center justify-center"
+          title="תפריט שבועי"
+        >
+          <CalendarDays size={20} strokeWidth={2} />
+        </button>
+      </div>
 
       {!results && (
         <div className="text-muted text-sm text-center py-10">

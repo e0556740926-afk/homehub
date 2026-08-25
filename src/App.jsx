@@ -14,7 +14,6 @@ import ReviewSheet from "./components/sheets/ReviewSheet";
 import WizardSheet from "./components/sheets/WizardSheet";
 import RecipeSheet from "./components/sheets/RecipeSheet";
 import SettingsSheet from "./components/sheets/SettingsSheet";
-import BarcodeSheet from "./components/sheets/BarcodeSheet";
 import FridgeScanSheet from "./components/sheets/FridgeScanSheet";
 import WeeklyMenuSheet from "./components/sheets/WeeklyMenuSheet";
 import VoiceSheet from "./components/sheets/VoiceSheet";
@@ -137,9 +136,7 @@ function Main() {
             onOpenAdd={() => setSheet("add")}
             onOpenRecipe={openRecipeSheet}
             onOpenSettings={() => setSheet("settings")}
-            onOpenBarcode={() => setSheet("barcode")}
             onOpenFridgeScan={() => setSheet("fridge")}
-            onOpenWeeklyMenu={() => setSheet("weeklyMenu")}
             onOpenVoice={() => setSheet("voice")}
           />
         )}
@@ -161,6 +158,7 @@ function Main() {
             answers={answers}
             onOpenWizard={() => setSheet("wizard")}
             onOpenRecipe={openRecipeSheet}
+            onOpenWeeklyMenu={() => setSheet("weeklyMenu")}
           />
         )}
 
@@ -210,15 +208,6 @@ function Main() {
         )}
         {sheet === "settings" && (
           <SettingsSheet settings={data.settings} onClose={() => setSheet(null)} onSave={data.saveSettings} />
-        )}
-        {sheet === "barcode" && (
-          <BarcodeSheet
-            onClose={() => setSheet(null)}
-            onAdd={(draft) => {
-              data.addItemManual(draft);
-              setTab("inv");
-            }}
-          />
         )}
         {sheet === "fridge" && (
           <FridgeScanSheet onClose={() => setSheet(null)} onScan={data.runScanFridge} onConfirm={handleFridgeConfirm} />

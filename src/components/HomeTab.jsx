@@ -1,6 +1,6 @@
 import {
-  Package, AlertTriangle, ShoppingCart, ScanLine, ChefHat, Heart, Settings, CalendarClock,
-  Barcode, RefrigeratorIcon, CalendarDays, Mic, TrendingDown, Flame, Trash2, Tag,
+  ShoppingCart, ScanLine, Package, RefrigeratorIcon, ChefHat, Heart, Settings, CalendarClock,
+  Mic, TrendingDown, Flame, Trash2, Tag,
 } from "lucide-react";
 import { getItemVisual } from "../lib/categoryVisuals";
 import { gradientForName } from "../lib/gradients";
@@ -35,9 +35,7 @@ export default function HomeTab({
   onOpenAdd,
   onOpenRecipe,
   onOpenSettings,
-  onOpenBarcode,
   onOpenFridgeScan,
-  onOpenWeeklyMenu,
   onOpenVoice,
 }) {
   return (
@@ -64,24 +62,19 @@ export default function HomeTab({
           </div>
           <div className="font-display font-extrabold text-3xl text-cream mb-5">{greeting()} 👋</div>
 
-          <div className="grid grid-cols-3 gap-2.5">
-            <StatCard icon={Package} value={items.length} label="פריטים" />
-            <StatCard icon={AlertTriangle} value={expiringCount} label="פגים בקרוב" warn={expiringCount > 0} />
-            <StatCard icon={ShoppingCart} value={list.length} label="לקנייה" />
+          <div className="bg-white/10 rounded-2xl p-3.5 flex items-center gap-3">
+            <ShoppingCart size={20} color="#FBF7F2" strokeWidth={2} />
+            <div className="font-display font-extrabold text-xl text-cream">{list.length}</div>
+            <div className="text-xs text-cream/60 font-semibold">פריטים ברשימת הקניות</div>
           </div>
         </div>
       </div>
 
       {/* Quick actions */}
-      <div className="px-5 -mt-5 relative grid grid-cols-3 gap-2.5 mb-2.5">
+      <div className="px-5 -mt-5 relative grid grid-cols-3 gap-2.5 mb-6">
         <QuickAction icon={ScanLine} label="סרוק קבלה" onClick={onOpenScan} />
-        <QuickAction icon={ChefHat} label="מה מבשלים" onClick={onOpenWizard} />
-        <QuickAction icon={Package} label="הוסף פריט" onClick={onOpenAdd} />
-      </div>
-      <div className="px-5 relative grid grid-cols-3 gap-2.5 mb-6">
-        <QuickAction icon={Barcode} label="ברקוד" onClick={onOpenBarcode} />
         <QuickAction icon={RefrigeratorIcon} label="סרוק מדף" onClick={onOpenFridgeScan} />
-        <QuickAction icon={CalendarDays} label="תפריט שבועי" onClick={onOpenWeeklyMenu} />
+        <QuickAction icon={Package} label="הוסף פריט" onClick={onOpenAdd} />
       </div>
 
       {/* Secondary insight stats: spending, cook streak, waste */}
@@ -197,16 +190,6 @@ export default function HomeTab({
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-function StatCard({ icon: Icon, value, label, warn }) {
-  return (
-    <div className="bg-white/10 rounded-2xl p-3 flex flex-col items-center gap-1">
-      <Icon size={18} color={warn ? "#F0997B" : "#FBF7F2"} strokeWidth={2} />
-      <div className="font-display font-extrabold text-xl text-cream">{value}</div>
-      <div className="text-[11px] text-cream/60 font-semibold">{label}</div>
     </div>
   );
 }
