@@ -1,4 +1,10 @@
+import { useState } from "react";
+import { ImageOff } from "lucide-react";
+import PhotoViewer from "./PhotoViewer";
+
 export default function ReceiptsTab({ receipts, onScan }) {
+  const [viewing, setViewing] = useState(null);
+
   return (
     <div className="px-5 pt-4 pb-28" dir="rtl">
       <div className="font-display text-xs tracking-widest text-mutedLight mb-1">RECEIPTS</div>
@@ -16,17 +22,35 @@ export default function ReceiptsTab({ receipts, onScan }) {
       ) : (
         <div className="flex flex-col gap-2.5">
           {receipts.map((r) => (
-            <div key={r.id} className="bg-white rounded-xl2 px-4 py-3 flex items-center justify-between shadow-sm">
+            <button
+              key={r.id}
+              onClick={() => r.image_url && setViewing(r)}
+              disabled={!r.image_url}
+              className="w-full bg-white rounded-xl2 px-4 py-3 flex items-center justify-between shadow-sm text-right"
+            >
               <div>
                 <div className="font-display font-extrabold text-base text-ink">{r.store || "חנות לא ידועה"}</div>
-                <div className="text-xs text-muted">
+                <div className="text-xs text-muted flex items-center gap-1">
                   {r.purchased_at} · {(r.raw_json?.items || []).length} פריטים
+                  {!r.image_url && (
+                    <span className="inline-flex items-center gap-0.5 text-mutedLight">
+                      · <ImageOff size={11} strokeWidth={2} /> אין תמונה
+                    </span>
+                  )}
                 </div>
               </div>
               <span className="font-display font-bold text-sm text-ink">₪{Number(r.total || 0).toFixed(2)}</span>
-            </div>
+            </button>
           ))}
         </div>
+      )}
+
+      {viewing && (
+        <PhotoViewer
+          url={viewing.image_url}
+          title={`${viewing.store || "חנות לא ידועה"} · ${viewing.purchased_at}`}
+          onClose={() => setViewing(null)}
+        />
       )}
     </div>
   );

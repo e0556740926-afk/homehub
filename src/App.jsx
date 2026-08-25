@@ -52,6 +52,7 @@ function Main() {
   const [scanBusy, setScanBusy] = useState(false);
   const [wizardBusy, setWizardBusy] = useState(false);
   const [parsedReceipt, setParsedReceipt] = useState(null);
+  const [receiptFile, setReceiptFile] = useState(null);
   const [results, setResults] = useState(null);
   const [answers, setAnswers] = useState({ servings: "2", style: "חלבי" });
   const [openRecipe, setOpenRecipe] = useState(null);
@@ -61,6 +62,7 @@ function Main() {
     try {
       const parsed = await data.runScanReceipt(file);
       setParsedReceipt(parsed);
+      setReceiptFile(file);
       setSheet("review");
     } catch (err) {
       data.showToast(err.message || "שגיאה בסריקה");
@@ -71,9 +73,10 @@ function Main() {
   }
 
   async function handleConfirmReceipt(parsed) {
-    await data.saveReceipt(parsed);
+    await data.saveReceipt(parsed, receiptFile);
     setSheet(null);
     setParsedReceipt(null);
+    setReceiptFile(null);
     setTab("inv");
   }
 

@@ -177,11 +177,36 @@ export function useHomeHubData() {
 
   // ---------- receipts ----------
   const saveReceipt = useCallback(
-    async (parsed) => {
+    async (parsed, file) => {
       const { store, purchased_at, total, items: scanItems } = parsed;
+
+      let image_url = null;
+      if (file) {
+        try {
+          const ext = (file.type && file.type.split("/")[1]) || "jpg";
+          const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+          const { error: uploadError } = await supabase.storage.from("receipts").upload(path, file, {
+            contentType: file.type || "image/jpeg",
+            upsert: false,
+          });
+          if (!uploadError) {
+            const { data: pub } = supabase.storage.from("receipts").getPublicUrl(path);
+            image_url = pub?.publicUrl || null;
+          }
+        } catch (e) {
+          // non-fatal: receipt is still saved without a photo
+        }
+      }
+
       const { data: receiptRow } = await supabase
         .from("receipts")
-        .insert({ store, purchased_at: purchased_at || new Date().toISOString().slice(0, 10), total, raw_json: parsed })
+        .insert({
+          store,
+          purchased_at: purchased_at || new Date().toISOString().slice(0, 10),
+          total,
+          raw_json: parsed,
+          image_url,
+        })
         .select()
         .single();
 
