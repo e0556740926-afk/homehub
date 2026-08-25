@@ -74,8 +74,31 @@ export default function WeeklyMenuSheet({ onClose, onGenerate, onAddAllMissing, 
                   </button>
                   {open && (
                     <div className="px-3.5 pb-3.5">
-                      <div className="text-xs text-mutedDark leading-relaxed border-t border-base pt-3">
-                        {d.recipe.instructions}
+                      <div className="border-t border-base pt-3">
+                        <div className="font-display font-bold text-xs text-ink mb-2">מצרכים</div>
+                        <div className="flex flex-col gap-1.5 mb-3">
+                          {d.recipe.ingredients.map((ing, ingIdx) => {
+                            const ingMissing = e.missing.includes(ing.name);
+                            return (
+                              <div key={ingIdx} className="flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className="w-2 h-2 rounded-full flex-none"
+                                    style={{ background: ingMissing ? "#E2603C" : "#5C7A63" }}
+                                  />
+                                  <span className="text-mutedDark">{ing.name}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 flex-none">
+                                  <span className="font-semibold text-ink">
+                                    {ing.quantity} {ing.unit}
+                                  </span>
+                                  {ingMissing && <span className="text-terracotta font-semibold">חסר</span>}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="text-xs text-mutedDark leading-relaxed">{d.recipe.instructions}</div>
                       </div>
                     </div>
                   )}

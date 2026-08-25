@@ -47,14 +47,17 @@ export default function RecipeSheet({ recipe, evalRecipe, servings, favorite, on
             <div key={idx} className="flex items-center justify-between bg-white rounded-xl px-3.5 py-2.5">
               <div className="flex items-center gap-2.5">
                 <span
-                  className="w-2.5 h-2.5 rounded-full"
+                  className="w-2.5 h-2.5 rounded-full flex-none"
                   style={{ background: missing ? "#E2603C" : "#5C7A63" }}
                 />
                 <span className="text-ink text-sm font-medium">{ing.name}</span>
               </div>
-              <span className={`font-display font-bold text-sm ${missing ? "text-terracotta" : "text-ink"}`}>
-                {missing ? "חסר" : `${ing.quantity} ${ing.unit}`}
-              </span>
+              <div className="flex items-center gap-2 flex-none">
+                <span className="font-display font-bold text-sm text-ink">
+                  {ing.quantity} {ing.unit}
+                </span>
+                {missing && <span className="text-terracotta text-xs font-semibold">חסר</span>}
+              </div>
             </div>
           );
         })}
