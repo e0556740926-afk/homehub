@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "./supabaseClient";
 import { guessLocation } from "./locationGuess";
+import { estimateCapacity, normalizeToBase, unitFamily, MEASURED_UNITS } from "./capacityGuess";
 import {
   suggestRecipes as suggestRecipesApi,
   scanReceipt as scanReceiptApi,
@@ -242,7 +243,23 @@ export function useHomeHubData() {
       const missing = [];
       for (const ing of recipe.ingredients) {
         const it = items.find((i) => i.name === ing.name);
-        if (it && it.quantity >= ing.quantity * 0.6) have++;
+        let sufficient = false;
+        if (it) {
+          if (it.unit === ing.unit) {
+            sufficient = it.quantity >= ing.quantity * 0.6;
+          } else if (it.unit === "יח׳" && MEASURED_UNITS.includes(ing.unit)) {
+            // Compare against remaining capacity across all owned units,
+            // not a naive quantity-vs-quantity check across mismatched units.
+            const family = unitFamily(ing.unit);
+            const usedDelta = normalizeToBase(ing.quantity, ing.unit);
+            const capacity = it.capacity_units || estimateCapacity(it.name, family);
+            const totalAvailable = it.quantity * capacity - (it.used_units || 0);
+            sufficient = totalAvailable >= usedDelta;
+          } else {
+            sufficient = it.quantity >= ing.quantity * 0.6;
+          }
+        }
+        if (sufficient) have++;
         else missing.push(ing.name);
       }
       const pct = recipe.ingredients.length ? Math.round((have / recipe.ingredients.length) * 100) : 0;
@@ -273,12 +290,57 @@ export function useHomeHubData() {
       for (const ing of recipe.ingredients) {
         const it = items.find((i) => i.name === ing.name);
         if (!it) continue;
-        const nq = round2(it.quantity - ing.quantity);
-        if (nq <= 0) {
-          await supabase.from("items").delete().eq("id", it.id);
-          outNames.push(it.name);
+
+        if (it.unit === ing.unit) {
+          // Same unit as inventory (e.g. both ג׳, both ל׳, both יח׳) —
+          // a direct amount, so a straight subtraction is meaningful.
+          const nq = round2(it.quantity - ing.quantity);
+          if (nq <= 0) {
+            await supabase.from("items").delete().eq("id", it.id);
+            outNames.push(it.name);
+          } else {
+            await supabase.from("items").update({ quantity: nq }).eq("id", it.id);
+          }
+        } else if (it.unit === "יח׳" && MEASURED_UNITS.includes(ing.unit)) {
+          // The item is tracked as whole packages/bottles ("יח׳"), but the
+          // recipe measures it in ml/grams (e.g. "15 מ״ל שמן זית" against
+          // a bottle). Using one tablespoon shouldn't remove the whole
+          // bottle — track cumulative usage and only count a bottle as
+          // finished once usage actually reaches its estimated capacity.
+          const family = unitFamily(ing.unit);
+          const usedDelta = normalizeToBase(ing.quantity, ing.unit);
+          const capacity = it.capacity_units || estimateCapacity(it.name, family);
+          const newUsed = (it.used_units || 0) + usedDelta;
+
+          if (newUsed >= capacity) {
+            const consumedUnits = Math.floor(newUsed / capacity);
+            const remainder = round2(newUsed - consumedUnits * capacity);
+            const nq = round2(it.quantity - consumedUnits);
+            if (nq <= 0) {
+              await supabase.from("items").delete().eq("id", it.id);
+              outNames.push(it.name);
+            } else {
+              await supabase
+                .from("items")
+                .update({ quantity: nq, used_units: remainder, capacity_units: capacity })
+                .eq("id", it.id);
+            }
+          } else {
+            await supabase
+              .from("items")
+              .update({ used_units: round2(newUsed), capacity_units: capacity })
+              .eq("id", it.id);
+          }
         } else {
-          await supabase.from("items").update({ quantity: nq }).eq("id", it.id);
+          // Unhandled unit combination — fall back to a direct subtraction
+          // as a best effort rather than silently doing nothing.
+          const nq = round2(it.quantity - ing.quantity);
+          if (nq <= 0) {
+            await supabase.from("items").delete().eq("id", it.id);
+            outNames.push(it.name);
+          } else {
+            await supabase.from("items").update({ quantity: nq }).eq("id", it.id);
+          }
         }
       }
       for (const name of outNames) {
