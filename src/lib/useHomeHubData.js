@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "./supabaseClient";
+import { guessLocation } from "./locationGuess";
 import {
   suggestRecipes as suggestRecipesApi,
   scanReceipt as scanReceiptApi,
@@ -145,7 +146,7 @@ export function useHomeHubData() {
         p_name: listRow.item_name,
         p_delta: listRow.quantity || 1,
         p_unit: listRow.unit || "יח׳",
-        p_location: "מזווה",
+        p_location: guessLocation(listRow.item_name),
       });
       showToast(`${listRow.item_name} נקנה → נוסף למלאי`);
       await loadAll();
@@ -209,7 +210,7 @@ export function useHomeHubData() {
           p_name: row.name,
           p_delta: row.quantity,
           p_unit: row.unit,
-          p_location: "מזווה",
+          p_location: row.location || "מזווה",
         });
         await supabase.from("price_history").insert({
           item_name: row.name,

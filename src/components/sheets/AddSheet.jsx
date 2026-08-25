@@ -3,6 +3,7 @@ import { BrowserMultiFormatReader } from "@zxing/browser";
 import { ScanBarcode, Pencil } from "lucide-react";
 import SheetShell from "./SheetShell";
 import { lookupBarcode } from "../../lib/api";
+import { guessLocation } from "../../lib/locationGuess";
 
 const UNITS = ["יח׳", "ג׳", "ק״ג", "ל׳", "מ״ל"];
 const LOCATIONS = ["מקרר", "מזווה", "מקפיא"];
@@ -34,7 +35,10 @@ export default function AddSheet({ toList, onClose, onAddInventory, onAddList })
           setScanStatus("looking-up");
           try {
             const product = await lookupBarcode(result.getText());
-            if (product?.name) setName(product.name);
+            if (product?.name) {
+              setName(product.name);
+              setLocation(guessLocation(product.name));
+            }
             setMode("manual");
           } catch {
             setScanError("שגיאה בבדיקת הברקוד — הזן שם ידנית");
