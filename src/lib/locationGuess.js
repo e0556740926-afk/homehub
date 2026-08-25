@@ -8,11 +8,14 @@
 // This is only ever a starting suggestion — the user can always override
 // it via the location chips.
 
-const FRIDGE = /חלב|יוגורט|לבן|קוטג|שמנת|גבינה|ביצ|עוף|בקר|בשר|נקניק|שניצל|כבש|הודו|דג|סלמון|טונה|חומוס|טחינה טרייה|סלט קנוי|חלבי/;
-const FREEZER = /קפוא|מוקפא|גלידה|שלגון|מקפיא/;
+const FRIDGE = /חלב|יוגורט|קוטג|שמנת|גבינה|ביצ|עוף|בקר|בשר|נקניק|שניצל|כבש|הודו|סלמון|טונה|חומוס|טחינה טרייה|סלט קנוי|חלבי|מילקי|סחוט|פסטרמה|שוקולית/;
+const FREEZER = /קפוא|מוקפא|גלידה|שלגון|תפוגן/;
 const PANTRY = /אורז|פסטה|קמח|לחם|פיתה|שימור|קופסת שימורים|שמן|חומץ|סוכר|מלח|תבלין|קפה|תה|ביסקוויט|עוגי|שוקולד|חטיף|משקה|מיץ תפוזים ארוך|מים מינרליים|נייר טואלט|ניקוי|כביסה|מגבונים|חיתולים/;
 
 export function guessLocation(name = "") {
+  // Powdered/mix products (cocoa powder etc.) are pantry regardless of
+  // otherwise-dairy-sounding wording in the name.
+  if (/אבקה|אבקת/.test(name)) return "מזווה";
   if (FREEZER.test(name)) return "מקפיא";
   if (FRIDGE.test(name)) return "מקרר";
   if (PANTRY.test(name)) return "מזווה";
