@@ -188,6 +188,12 @@ export default function HomeTab({
                     {r.time_minutes ? `${r.time_minutes} דק׳ · ` : ""}
                     {r.style}
                   </div>
+                  {r.calories_per_serving && (
+                    <div className="text-[11px] text-terracotta font-semibold mt-0.5 flex items-center gap-0.5">
+                      <Flame size={10} strokeWidth={2.2} />
+                      {Math.round(r.calories_per_serving)} קק״ל
+                    </div>
+                  )}
                 </div>
               </button>
             ))}

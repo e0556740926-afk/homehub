@@ -43,6 +43,7 @@ ${inventoryText}
       "name": "שם המתכון",
       "style": "${answers.style}",
       "time_minutes": מספר,
+      "calories_per_serving": מספר (הערכת קלוריות למנה אחת, לפי המצרכים והכמויות),
       "ingredients": [
         { "name": "שם המצרך (בדיוק כפי שמופיע במלאי אם קיים שם)", "quantity": מספר לכמות סועדים שהתבקשה, "unit": "יח׳ | ג׳ | ק״ג | ל׳ | מ״ל" }
       ],

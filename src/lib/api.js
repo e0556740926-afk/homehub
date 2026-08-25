@@ -64,6 +64,18 @@ export async function askAssistant(question, items, list) {
   return data.answer || "";
 }
 
+export async function estimateCalories(file, servings) {
+  const imageBase64 = await fileToBase64(file);
+  const res = await fetch("/api/estimate-calories", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ imageBase64, mediaType: file.type || "image/jpeg", servings }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "שגיאה בהערכת הקלוריות");
+  return data;
+}
+
 // Open Food Facts is a free, keyless public database — good fit for
 // barcode → product-name lookups without adding another paid dependency.
 export async function lookupBarcode(code) {

@@ -6,6 +6,7 @@ import {
   scanFridge as scanFridgeApi,
   getWeeklyMenu as getWeeklyMenuApi,
   askAssistant as askAssistantApi,
+  estimateCalories as estimateCaloriesApi,
 } from "./api";
 
 const UNIT_STEP = { "ק״ג": 0.5, "ג׳": 50, "ל׳": 0.5, "מ״ל": 50, "יח׳": 1 };
@@ -290,6 +291,7 @@ export function useHomeHubData() {
             name: recipe.name,
             style: recipe.style,
             time_minutes: recipe.time_minutes,
+            calories_per_serving: recipe.calories_per_serving,
             ingredients: recipe.ingredients,
             is_favorite: true,
           })
@@ -351,6 +353,9 @@ export function useHomeHubData() {
 
   // ---------- weekly meal planner ----------
   const runWeeklyMenu = useCallback(async (servings) => getWeeklyMenuApi(items, servings), [items]);
+
+  // ---------- one-off photo calorie estimate ----------
+  const runEstimateCalories = useCallback(async (file, servings) => estimateCaloriesApi(file, servings), []);
 
   // ---------- voice / text assistant ----------
   const runAsk = useCallback(async (question) => askAssistantApi(question, items, list), [items, list]);
@@ -470,6 +475,7 @@ export function useHomeHubData() {
     runScanFridge,
     addFridgeScanItems,
     runWeeklyMenu,
+    runEstimateCalories,
     runAsk,
     predictedRunOut,
     spendingStats,

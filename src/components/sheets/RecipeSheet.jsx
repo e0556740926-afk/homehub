@@ -1,4 +1,4 @@
-import { Heart, ChefHat } from "lucide-react";
+import { Heart, ChefHat, Flame } from "lucide-react";
 import SheetShell from "./SheetShell";
 import { gradientForName } from "../../lib/gradients";
 
@@ -23,10 +23,18 @@ export default function RecipeSheet({ recipe, evalRecipe, servings, favorite, on
 
       <div className="font-display font-extrabold text-2xl text-ink mb-1">{recipe.name}</div>
       <div className="flex items-center justify-between mb-4">
-        <span className="text-muted text-sm">
-          {recipe.time_minutes} דק׳ · {servings} סועדים · {recipe.style}
+        <span className="text-muted text-sm flex items-center gap-1.5 flex-wrap">
+          <span>
+            {recipe.time_minutes} דק׳ · {servings} סועדים · {recipe.style}
+          </span>
+          {recipe.calories_per_serving && (
+            <span className="inline-flex items-center gap-0.5 text-terracotta font-semibold">
+              <Flame size={12} strokeWidth={2.2} />
+              {Math.round(recipe.calories_per_serving)} קק״ל למנה
+            </span>
+          )}
         </span>
-        <span className={`font-display font-extrabold text-xl ${e.pct === 100 ? "text-sage" : "text-terracotta"}`}>
+        <span className={`font-display font-extrabold text-xl flex-none ${e.pct === 100 ? "text-sage" : "text-terracotta"}`}>
           {e.pct}%
         </span>
       </div>

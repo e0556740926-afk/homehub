@@ -62,6 +62,11 @@ export default function WeeklyMenuSheet({ onClose, onGenerate, onAddAllMissing, 
                     <div className="flex-1 min-w-0">
                       <div className="text-xs text-muted">{d.day}</div>
                       <div className="font-display font-bold text-sm text-ink line-clamp-1">{d.recipe.name}</div>
+                      {d.recipe.calories_per_serving && (
+                        <div className="text-[11px] text-terracotta font-semibold">
+                          {Math.round(d.recipe.calories_per_serving)} קק״ל למנה
+                        </div>
+                      )}
                     </div>
                     <span className={`font-display font-bold text-sm flex-none ${e.pct === 100 ? "text-sage" : "text-terracotta"}`}>
                       {e.pct}%

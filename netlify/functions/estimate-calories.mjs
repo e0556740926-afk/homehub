@@ -1,6 +1,7 @@
-// Netlify Function: weekly-menu
-// Given current inventory, asks Gemini for a full 7-day meal plan that
-// maximizes use of what's already at home and minimizes waste.
+// Netlify Function: estimate-calories
+// Receives a photo of a meal/dish plus the number of servings it's meant
+// to be split across, and asks Gemini to estimate total and per-serving
+// calories. This is a one-off estimate — nothing is persisted.
 
 const MODEL = "gemini-3.6-flash";
 
@@ -15,34 +16,24 @@ export default async (req) => {
   }
 
   try {
-    const { items, servings } = await req.json();
-    if (!Array.isArray(items)) {
-      return new Response(JSON.stringify({ error: "חסרים נתוני מלאי" }), { status: 400 });
+    const { imageBase64, mediaType, servings } = await req.json();
+    if (!imageBase64) {
+      return new Response(JSON.stringify({ error: "חסרה תמונה" }), { status: 400 });
     }
+    const numServings = Math.max(1, parseInt(servings, 10) || 1);
 
-    const inventoryText = items.map((i) => `${i.name}: ${i.quantity} ${i.unit}`).join("\n");
+    const prompt = `אתה מקבל תמונה של מנת אוכל / סיר / קערה. זהה מה זה, העריך את הכמות הכוללת הנראית בתמונה, וחשב הערכת קלוריות.
+המנה בתמונה מיועדת להתחלק ל-${numServings} מנות הגשה (סועדים).
 
-    const prompt = `יש לי בבית את המצרכים הבאים (שם: כמות):
-${inventoryText}
-
-בנה לי תפריט ל-7 ימים (ראשון עד שבת), ארוחת ערב אחת ליום, ל-${servings || 2} סועדים כל ארוחה.
-תעדף מתכונים שממקסמים שימוש במה שכבר יש, ומצרכים משותפים בין כמה ימים כדי לצמצם בזבוז וקנייה נוספת.
 החזר אך ורק JSON תקני (ללא markdown fences, ללא טקסט נוסף) במבנה:
 {
-  "days": [
-    {
-      "day": "ראשון",
-      "recipe": {
-        "name": "שם המתכון",
-        "time_minutes": מספר,
-        "calories_per_serving": מספר (הערכת קלוריות למנה אחת),
-        "ingredients": [ { "name": "שם המצרך (זהה לשם במלאי אם קיים)", "quantity": מספר, "unit": "יח׳ | ג׳ | ק״ג | ל׳ | מ״ל" } ],
-        "instructions": "הוראות קצרות"
-      }
-    }
-  ]
+  "dish_name": "שם המנה בעברית",
+  "total_calories": מספר (הערכת קלוריות לכל מה שנראה בתמונה),
+  "calories_per_serving": מספר (total_calories חלקי ${numServings}),
+  "confidence": מספר בין 0 ל-1,
+  "note": "משפט קצר על הבסיס להערכה (למשל מרכיבים עיקריים שזוהו)"
 }
-7 ימים בדיוק, לפי הסדר ראשון-שבת.`;
+זו הערכה גסה בלבד המבוססת על מראה חזותי — אין צורך בדיוק מדעי, אבל השתדל להיות סביר וריאליסטי.`;
 
     const resp = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
@@ -50,7 +41,15 @@ ${inventoryText}
         method: "POST",
         headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
         body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          contents: [
+            {
+              role: "user",
+              parts: [
+                { inline_data: { mime_type: mediaType || "image/jpeg", data: imageBase64 } },
+                { text: prompt },
+              ],
+            },
+          ],
           generationConfig: { response_mime_type: "application/json" },
         }),
       }

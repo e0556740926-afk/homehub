@@ -16,6 +16,7 @@ import RecipeSheet from "./components/sheets/RecipeSheet";
 import SettingsSheet from "./components/sheets/SettingsSheet";
 import FridgeScanSheet from "./components/sheets/FridgeScanSheet";
 import WeeklyMenuSheet from "./components/sheets/WeeklyMenuSheet";
+import CalorieSheet from "./components/sheets/CalorieSheet";
 import VoiceSheet from "./components/sheets/VoiceSheet";
 
 function ConfigErrorScreen() {
@@ -160,6 +161,7 @@ function Main() {
             onOpenWizard={() => setSheet("wizard")}
             onOpenRecipe={openRecipeSheet}
             onOpenWeeklyMenu={() => setSheet("weeklyMenu")}
+            onOpenCalories={() => setSheet("calories")}
           />
         )}
 
@@ -221,6 +223,7 @@ function Main() {
             evalRecipe={data.evalRecipe}
           />
         )}
+        {sheet === "calories" && <CalorieSheet onClose={() => setSheet(null)} onEstimate={data.runEstimateCalories} />}
         {sheet === "voice" && <VoiceSheet onClose={() => setSheet(null)} onAsk={data.runAsk} />}
       </div>
     </div>
