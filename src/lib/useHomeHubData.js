@@ -141,22 +141,16 @@ export function useHomeHubData() {
     async (listRow) => {
       await supabase.from("shopping_list").delete().eq("id", listRow.id);
       setList((s) => s.filter((x) => x.id !== listRow.id));
-      const existing = items.find((i) => i.name === listRow.item_name);
-      if (existing) {
-        const nq = round2(existing.quantity + (listRow.quantity || 1));
-        await supabase.from("items").update({ quantity: nq }).eq("id", existing.id);
-        setItems((s) => s.map((x) => (x.id === existing.id ? { ...x, quantity: nq } : x)));
-      } else {
-        const { data } = await supabase
-          .from("items")
-          .insert({ name: listRow.item_name, quantity: listRow.quantity || 1, unit: listRow.unit || "יח׳", location: "מזווה" })
-          .select()
-          .single();
-        if (data) setItems((s) => [...s, data].sort((a, b) => a.name.localeCompare(b.name, "he")));
-      }
+      await supabase.rpc("upsert_item_quantity", {
+        p_name: listRow.item_name,
+        p_delta: listRow.quantity || 1,
+        p_unit: listRow.unit || "יח׳",
+        p_location: "מזווה",
+      });
       showToast(`${listRow.item_name} נקנה → נוסף למלאי`);
+      await loadAll();
     },
-    [items, showToast]
+    [showToast, loadAll]
   );
 
   const addManualToList = useCallback(
@@ -211,18 +205,12 @@ export function useHomeHubData() {
         .single();
 
       for (const row of scanItems) {
-        const existing = items.find((i) => i.name === row.name);
-        if (existing) {
-          const nq = round2(existing.quantity + row.quantity);
-          await supabase.from("items").update({ quantity: nq }).eq("id", existing.id);
-        } else {
-          const { data: newItem } = await supabase
-            .from("items")
-            .insert({ name: row.name, quantity: row.quantity, unit: row.unit, location: "מזווה" })
-            .select()
-            .single();
-          if (newItem) items.push(newItem);
-        }
+        await supabase.rpc("upsert_item_quantity", {
+          p_name: row.name,
+          p_delta: row.quantity,
+          p_unit: row.unit,
+          p_location: "מזווה",
+        });
         await supabase.from("price_history").insert({
           item_name: row.name,
           store,
@@ -358,22 +346,19 @@ export function useHomeHubData() {
 
   const addFridgeScanItems = useCallback(
     async (scanItems) => {
-      let added = 0;
       for (const row of scanItems) {
-        const existing = items.find((i) => i.name === row.name);
-        if (existing) {
-          const nq = round2(existing.quantity + row.quantity);
-          await supabase.from("items").update({ quantity: nq }).eq("id", existing.id);
-        } else {
-          await supabase.from("items").insert({ name: row.name, quantity: row.quantity, unit: row.unit, location: row.location || "מזווה" });
-          added++;
-        }
+        await supabase.rpc("upsert_item_quantity", {
+          p_name: row.name,
+          p_delta: row.quantity,
+          p_unit: row.unit,
+          p_location: row.location || "מזווה",
+        });
       }
       showToast(`המלאי עודכן (${scanItems.length} פריטים)`);
       await loadAll();
-      return added;
+      return scanItems.length;
     },
-    [items, loadAll, showToast]
+    [loadAll, showToast]
   );
 
   // ---------- weekly meal planner ----------

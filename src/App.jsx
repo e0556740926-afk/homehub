@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { isSupabaseConfigured, supabaseConfigError } from "./lib/supabaseClient";
 import { useHomeHubData } from "./lib/useHomeHubData";
 import TabBar from "./components/TabBar";
@@ -56,6 +56,7 @@ function Main() {
   const [results, setResults] = useState(null);
   const [answers, setAnswers] = useState({ servings: "2", style: "חלבי" });
   const [openRecipe, setOpenRecipe] = useState(null);
+  const savingReceiptRef = useRef(false);
 
   async function handleScanFile(file) {
     setScanBusy(true);
@@ -73,11 +74,17 @@ function Main() {
   }
 
   async function handleConfirmReceipt(parsed) {
-    await data.saveReceipt(parsed, receiptFile);
-    setSheet(null);
-    setParsedReceipt(null);
-    setReceiptFile(null);
-    setTab("inv");
+    if (savingReceiptRef.current) return;
+    savingReceiptRef.current = true;
+    try {
+      await data.saveReceipt(parsed, receiptFile);
+      setSheet(null);
+      setParsedReceipt(null);
+      setReceiptFile(null);
+      setTab("inv");
+    } finally {
+      savingReceiptRef.current = false;
+    }
   }
 
   async function handleWizardDone(ans) {

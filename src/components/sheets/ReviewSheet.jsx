@@ -7,10 +7,21 @@ function fmt(n) {
 
 export default function ReviewSheet({ parsed, onClose, onConfirm }) {
   const [fixed, setFixed] = useState({}); // index -> true once confirmed
+  const [saving, setSaving] = useState(false);
 
   if (!parsed) return null;
   const lowConfidenceIdx = parsed.items.findIndex((it) => (it.confidence ?? 1) < 0.7);
   const needsFix = lowConfidenceIdx >= 0 && !fixed[lowConfidenceIdx];
+
+  async function handleConfirm() {
+    if (saving) return;
+    setSaving(true);
+    try {
+      await onConfirm(parsed);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <SheetShell title="אישור קבלה" onClose={onClose}>
@@ -57,13 +68,13 @@ export default function ReviewSheet({ parsed, onClose, onConfirm }) {
         })}
       </div>
       <button
-        disabled={needsFix}
-        onClick={() => onConfirm(parsed)}
+        disabled={needsFix || saving}
+        onClick={handleConfirm}
         className={`w-full rounded-xl2 py-3.5 text-center font-display font-bold ${
-          needsFix ? "bg-chip text-mutedLight" : "bg-ink text-cream"
+          needsFix || saving ? "bg-chip text-mutedLight" : "bg-ink text-cream"
         }`}
       >
-        {needsFix ? "צריך לאשר את הפריט המסומן" : "שמור ועדכן מלאי"}
+        {saving ? "שומר…" : needsFix ? "צריך לאשר את הפריט המסומן" : "שמור ועדכן מלאי"}
       </button>
     </SheetShell>
   );
