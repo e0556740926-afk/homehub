@@ -137,6 +137,7 @@ function Main() {
             onOpenRecipe={openRecipeSheet}
             onOpenSettings={() => setSheet("settings")}
             onOpenFridgeScan={() => setSheet("fridge")}
+            onOpenList={() => setTab("list")}
             onOpenVoice={() => setSheet("voice")}
           />
         )}

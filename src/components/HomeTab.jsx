@@ -37,6 +37,7 @@ export default function HomeTab({
   onOpenSettings,
   onOpenFridgeScan,
   onOpenVoice,
+  onOpenList,
 }) {
   return (
     <div className="pb-28" dir="rtl">
@@ -62,11 +63,14 @@ export default function HomeTab({
           </div>
           <div className="font-display font-extrabold text-3xl text-cream mb-5">{greeting()} 👋</div>
 
-          <div className="bg-white/10 rounded-2xl p-3.5 flex items-center gap-3">
+          <button
+            onClick={onOpenList}
+            className="w-full bg-white/10 rounded-2xl p-3.5 flex items-center gap-3 text-right active:scale-95 transition-transform"
+          >
             <ShoppingCart size={20} color="#FBF7F2" strokeWidth={2} />
             <div className="font-display font-extrabold text-xl text-cream">{list.length}</div>
             <div className="text-xs text-cream/60 font-semibold">פריטים ברשימת הקניות</div>
-          </div>
+          </button>
         </div>
       </div>
 
